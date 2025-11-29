@@ -1,0 +1,7 @@
+## Interface: 30300
+## Title: ShareXP
+## Version: 1.0.4
+## Author: SoonBeSteak @ Netherwing
+## Notes: Share your current XP level with your group.
+## SavedVariables: ShareXPDB
+Core.lua
