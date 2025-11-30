@@ -2,6 +2,7 @@ local f = CreateFrame("frame", "ShareXPFrame", UIParent)
 
 f.messages = {}
 f.channel = "ShareXP"
+f.debug = true
 
 local numBars = 0
 local barSize = 16
@@ -82,10 +83,12 @@ local function QueueAddOnMessage(msg)
                 if existingMsg == msg then return end
                 if GetPrefix(existingMsg) == GetPrefix(msg) and GetPrefix(existingMsg) ~= nil then
                         f.messages[i] = msg
+			if f.debug then print("[SHAREXP]: message found at index "..i.." ("..msg..")") end
                         return
                 end
         end
 
+	if f.debug then print("[SHAREXP]: adding message to queue ("..msg..")") end
         table.insert(f.messages, msg)
 end
 
@@ -327,7 +330,7 @@ end
 local function SendAddOnMessage()
 	if GetChannelName(f.channel) > 0 then
 		SendChatMessage(f.messages[1], "CHANNEL", nil, GetChannelName(f.channel))
-		if f.debug == "on" then print("[SHAREXP]: Sent AddOn message.") end
+		if f.debug == true then print("[SHAREXP]: Sent AddOn message.") end
 	end
 end
 
@@ -419,7 +422,7 @@ local function OnEvent(self, event, ...)
 
 		if name == UnitName("player") then
 			f.lastMessageTime = GetTime()
-			if f.debug == "on" then print("[SHAREXP]: Last message time "..f.lastMessageTime) end
+			if f.debug == true then print("[SHAREXP]: Last message time "..f.lastMessageTime) end
 		end
 	end
 end
@@ -476,11 +479,11 @@ local function SlashCmd(...)
 
 	if cmd == "off" then
 		--f:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		f.debug = "on"
+		f.debug = true
                 print("[SHAREXP]: debug off")
 	elseif cmd == "on" then
 		--f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		f.debug = "off"
+		f.debug = false
                 print("[SHAREXP]: debug on")
 	elseif cmd == "print" then
 		for k,v in ipairs(f.messages) do
