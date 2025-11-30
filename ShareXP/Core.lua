@@ -364,8 +364,11 @@ local function OnEvent(self, event, ...)
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
-		if name == UnitName("player") then
+		if name == UnitName("player") and chan == self.channel then
 			print(msg, name, chan)
+			for k, v in ipairs(self.messages) do
+				print(k, v)
+			end
 		end
 
 		if name == UnitName("player") and chan == self.channel then
