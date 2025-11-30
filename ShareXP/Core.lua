@@ -78,13 +78,15 @@ end
 
 local function QueueAddOnMessage(msg)
         if UnitLevel("player") < 15 then return end
+	if UnitLevel("player") == MAX_LEVEL and getPrefix(msg) == "XP" then return end
 
         for i, existingMsg in ipairs(f.messages) do
                 if existingMsg == msg then return end
                 if GetPrefix(existingMsg) == GetPrefix(msg) and GetPrefix(existingMsg) ~= nil then
-                        f.messages[i] = msg
-			if f.debug then print("[SHAREXP]: message found at index "..i.." ("..msg..")") end
-                        return
+			-- f.messages[i] = msg
+			-- if f.debug then print("[SHAREXP]: message found at index "..i.." ("..msg..")") end
+                        -- return
+			table.remove(f.messages, i)
                 end
         end
 
@@ -330,7 +332,6 @@ end
 local function SendAddOnMessage()
 	if GetChannelName(f.channel) > 0 then
 		SendChatMessage(f.messages[1], "CHANNEL", nil, GetChannelName(f.channel))
-		if f.debug == true then print("[SHAREXP]: Sent AddOn message.") end
 	end
 end
 
@@ -485,6 +486,11 @@ local function SlashCmd(...)
 		--f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		f.debug = false
                 print("[SHAREXP]: debug on")
+	elseif cmd == "remove" then
+		table.remove(f.messages, 1)
+		for k,v in ipairs(f.messages) do
+			print(k, v)
+		end	
 	elseif cmd == "print" then
 		for k,v in ipairs(f.messages) do
 			print(k, v)
