@@ -1,3 +1,5 @@
+local f = CreateFrame("frame", "ShareXPFrame", UIParent)
+
 local numBars = 0
 local barSize = 16
 local barWidth = 200
@@ -43,14 +45,14 @@ local ErrorFilter = {
 
 local origErrorOnEvent = UIErrorsFrame:GetScript("OnEvent")
 UIErrorsFrame:SetScript("OnEvent", function(self, event, ...)
-        if AddOnMessagesFrame[event] then
+        if ShareXPFrame[event] then
                 return AddOnMessagesFrame[event](self, event, ...)
         else
                 return origErrorOnEvent(self, event, ...)
         end
 end)
 
-function AddOnMessagesFrame:UI_ERROR_MESSAGE(event, name, ...)
+function ShareXPFrame:UI_ERROR_MESSAGE(event, name, ...)
         for k, v in ipairs(ErrorFilter) do
                 if( string.find( string.lower(name), v ) ) then
                         return
@@ -254,8 +256,6 @@ local function AddUnit(name, class, curXP, maxXP, lvl)
 
 	ShareXP_Refresh()
 end
-
-local f = CreateFrame("frame", "ShareXPFrame", UIParent)
 
 f:SetSize(barWidth, barSize)
 
