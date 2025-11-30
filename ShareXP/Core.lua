@@ -211,7 +211,7 @@ local function ShareXP(lvl)
 end
 
 local function Disable()
-	LeaveChannelByName(f.channel)
+	LeaveChannelByName(channel)
 
 	for i=1,numBars,1 do
 		_G["ShareXPBar"..i]:Hide()
@@ -221,10 +221,10 @@ local function Disable()
 end
 
 local function Enable()
-	JoinChannelByName(f.channel)
+	JoinChannelByName(channel)
 
 	for i=1,NUM_CHAT_WINDOWS,1 do
-		RemoveChatWindowChannel(i, f.channel)
+		RemoveChatWindowChannel(i, channel)
 	end
 
 	QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
@@ -325,8 +325,8 @@ function ShareXP_AddBar(i)
 end
 
 local function SendAddOnMessage()
-	if GetChannelName(f.channel) > 0 then
-		SendChatMessage(messages[1], "CHANNEL", nil, GetChannelName(f.channel))
+	if GetChannelName(channel) > 0 then
+		SendChatMessage(messages[1], "CHANNEL", nil, GetChannelName(channel))
 	end
 end
 
@@ -363,14 +363,14 @@ local function OnEvent(self, event, ...)
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
-		if name == UnitName("player") and chan == self.channel then
+		if name == UnitName("player") and chan == channel then
 			print(msg, name, chan)
 			for k, v in ipairs(messages) do
 				print(k, v)
 			end
 		end
 
-		if name == UnitName("player") and chan == self.channel then
+		if name == UnitName("player") and chan == channel then
 			for k, v in ipairs(messages) do
 				if v == msg then
 					print("[SHAREXP]: message sent successfully ["..k.."] ("..msg..")")
@@ -379,7 +379,7 @@ local function OnEvent(self, event, ...)
 			end
 		end
 
-		if ( chan == self.channel and IsInParty(name) ) then
+		if ( chan == channel and IsInParty(name) ) then
 			local type, args = string.split(":", msg, 2)
 
 			if ( type == "XP" ) then
