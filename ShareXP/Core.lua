@@ -230,7 +230,7 @@ local function Enable()
 	end
 
 	QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-	QueueAddOnMessage("REFRESH")
+	--QueueAddOnMessage("REFRESH")
 
 	PruneTable()
 
@@ -329,9 +329,7 @@ end
 local function SendAddOnMessage()
 	if GetChannelName(channel) > 0 then
 		SendChatMessage(messages[1], "CHANNEL", nil, GetChannelName(channel))
-		print("[SHAREXP]: Sent ("..messages[1]..")")
 		table.remove(messages, 1)
-		print("[SHAREXP]: Removed ("..messages[1]..")")
 	end
 end
 
@@ -358,26 +356,11 @@ local function OnEvent(self, event, ...)
 		end
 	elseif ( event == "PLAYER_LEVEL_UP" ) then
 		local lvl = ...
-		--if lvl < MAX_LEVEL then
-			QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl))
-		--end
+		QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl))
 	elseif ( event == "PLAYER_XP_UPDATE" ) then
-		--if UnitLevel("player") < MAX_LEVEL then
-			QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-		--end
+		QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
-
-		--[[
-		if name == UnitName("player") and chan == channel then
-			for k, v in ipairs(messages) do
-				if v == msg then
-					print("[SHAREXP]: message sent successfully ["..k.."] ("..msg..")")
-					table.remove(messages, k)
-				end
-			end
-		end
-		]]
 
 		if ( chan == channel and IsInParty(name) ) then
 			local type, args = string.split(":", msg, 2)
@@ -394,9 +377,7 @@ local function OnEvent(self, event, ...)
 				end
 			elseif ( type == "REFRESH" ) then
 				if name ~= UnitName("player") then
-					--if UnitLevel("player") < MAX_LEVEL then
-						QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-					--end
+					--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
 				end
 			end
 		end
