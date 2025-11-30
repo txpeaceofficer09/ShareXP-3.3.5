@@ -79,12 +79,14 @@ local function QueueAddOnMessage(msg)
         if UnitLevel("player") < 15 then return end
 	if UnitLevel("player") == MAX_LEVEL and GetPrefix(msg) == "XP" then return end
 
+	--[[
         for i, existingMsg in ipairs(messages) do
                 if existingMsg == msg then return end
                 if GetPrefix(existingMsg) == GetPrefix(msg) and GetPrefix(existingMsg) ~= nil then
 			table.remove(messages, i)
                 end
         end
+	]]
 
         table.insert(messages, msg)
 end
@@ -327,7 +329,9 @@ end
 local function SendAddOnMessage()
 	if GetChannelName(channel) > 0 then
 		SendChatMessage(messages[1], "CHANNEL", nil, GetChannelName(channel))
+		print("[SHAREXP]: Sent ("..messages[1]..")")
 		table.remove(messages, 1)
+		print("[SHAREXP]: Removed ("..messages[1]..")")
 	end
 end
 
