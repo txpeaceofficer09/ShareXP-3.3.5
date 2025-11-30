@@ -477,11 +477,15 @@ local function SlashCmd(...)
 	if cmd == "off" then
 		--f:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		f.debug = "on"
-                print("off")
+                print("[SHAREXP]: debug off")
 	elseif cmd == "on" then
 		--f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		f.debug = "off"
-                print("on")
+                print("[SHAREXP]: debug on")
+	elseif cmd == "print" then
+		for k,v in ipairs(f.messages) do
+			print(k, v)
+		end
 	elseif cmd == "reset" then
 		ShareXPDB.data = {}
 		ShareXP_Refresh()
