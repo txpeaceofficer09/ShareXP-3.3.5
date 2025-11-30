@@ -223,7 +223,7 @@ local function Disable()
 end
 
 local function Enable()
-	if GetChannelName(channel) ~> 0 then
+	if GetChannelName(channel) == 0 then
 		JoinChannelByName(channel)
 	end
 
@@ -437,7 +437,7 @@ local function OnUpdate(self, elapsed)
         self.lastMessageTime = self.lastMessageTime or GetTime()
 
         if self.timer > 0.2 then
-		if GetChannelName(channel) ~> 0 then
+		if GetChannelName(channel) == 0 then
 			JoinChannelByName(channel)
 
 			for i=1,NUM_CHAT_WINDOWS,1 do
