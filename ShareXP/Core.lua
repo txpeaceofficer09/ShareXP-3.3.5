@@ -1,8 +1,7 @@
 local f = CreateFrame("frame", "ShareXPFrame", UIParent)
 
-f.messages = {}
-f.channel = "ShareXP"
-f.debug = true
+local messages = {}
+local channel = "ShareXP"
 
 local numBars = 0
 local barSize = 16
@@ -80,14 +79,14 @@ local function QueueAddOnMessage(msg)
         if UnitLevel("player") < 15 then return end
 	if UnitLevel("player") == MAX_LEVEL and GetPrefix(msg) == "XP" then return end
 
-        for i, existingMsg in ipairs(f.messages) do
+        for i, existingMsg in ipairs(messages) do
                 if existingMsg == msg then return end
                 if GetPrefix(existingMsg) == GetPrefix(msg) and GetPrefix(existingMsg) ~= nil then
-			table.remove(f.messages, i)
+			table.remove(messages, i)
                 end
         end
 
-        table.insert(f.messages, msg)
+        table.insert(messages, msg)
 end
 
 local function ucfirst(str)
@@ -327,7 +326,7 @@ end
 
 local function SendAddOnMessage()
 	if GetChannelName(f.channel) > 0 then
-		SendChatMessage(f.messages[1], "CHANNEL", nil, GetChannelName(f.channel))
+		SendChatMessage(messages[1], "CHANNEL", nil, GetChannelName(f.channel))
 	end
 end
 
@@ -366,16 +365,16 @@ local function OnEvent(self, event, ...)
 
 		if name == UnitName("player") and chan == self.channel then
 			print(msg, name, chan)
-			for k, v in ipairs(self.messages) do
+			for k, v in ipairs(messages) do
 				print(k, v)
 			end
 		end
 
 		if name == UnitName("player") and chan == self.channel then
-			for k, v in ipairs(self.messages) do
+			for k, v in ipairs(messages) do
 				if v == msg then
 					print("[SHAREXP]: message sent successfully ["..k.."] ("..msg..")")
-					table.remove(f.messages, k)
+					table.remove(messages, k)
 				end
 			end
 		end
@@ -456,7 +455,7 @@ local function OnUpdate(self, elapsed)
         if self.timer > 0.2 then
                 --if GetTime() - self.lastMessageTime > MESSAGE_DELAY and (self.counter or 0) < 3 then
                 if GetTime() - self.lastMessageTime > delay then
-                        if #(self.messages) > 0 then
+                        if #(messages) > 0 then
                                 SendAddOnMessage()
                         end
                 end
@@ -488,12 +487,12 @@ local function SlashCmd(...)
 		f.debug = false
                 print("[SHAREXP]: debug on")
 	elseif cmd == "remove" then
-		table.remove(f.messages, 1)
-		for k,v in ipairs(f.messages) do
+		table.remove(messages, 1)
+		for k,v in ipairs(messages) do
 			print(k, v)
 		end	
 	elseif cmd == "print" then
-		for k,v in ipairs(f.messages) do
+		for k,v in ipairs(messages) do
 			print(k, v)
 		end
 	elseif cmd == "reset" then
