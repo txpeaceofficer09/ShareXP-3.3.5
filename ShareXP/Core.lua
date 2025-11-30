@@ -78,7 +78,7 @@ end
 
 local function QueueAddOnMessage(msg)
         if UnitLevel("player") < 15 then return end
-	if UnitLevel("player") == MAX_LEVEL and getPrefix(msg) == "XP" then return end
+	if UnitLevel("player") == MAX_LEVEL and GetPrefix(msg) == "XP" then return end
 
         for i, existingMsg in ipairs(f.messages) do
                 if existingMsg == msg then return end
