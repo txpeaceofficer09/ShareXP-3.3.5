@@ -327,6 +327,7 @@ end
 
 local function SendAddOnMessage()
 	if GetChannelName(f.channel) > 0 then
+		print("[SHAREXP]: sending ("..f.messages[1]..")")
 		SendChatMessage(f.messages[1], "CHANNEL", nil, GetChannelName(f.channel))
 	end
 end
@@ -367,6 +368,7 @@ local function OnEvent(self, event, ...)
 		if name == UnitName("player") and chan == self.channel then
 			for k, v in ipairs(self.messages) do
 				if v == msg then
+					print("[SHAREXP]: message sent successfully ["..k.."] ("..msg..")")
 					table.remove(f.messages, k)
 				end
 			end
