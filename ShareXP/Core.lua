@@ -128,14 +128,6 @@ local function unitIndex(name)
 	return false
 end
 
-local function PruneTable()
-	for k,v in ipairs(ShareXPDB.data) do
-		if not IsInParty(v["name"]) and v["name"] ~= UnitName("player") then
-			table.remove(ShareXPDB.data, k)
-		end
-	end
-end
-
 local function GetNumGroupMembers()
         local party, raid = GetNumPartyMembers(), GetNumRaidMembers()
 
@@ -164,6 +156,14 @@ local function IsInParty(name)
 	end
 
 	return false
+end
+
+local function PruneTable()
+	for k,v in ipairs(ShareXPDB.data) do
+		if not IsInParty(v["name"]) and v["name"] ~= UnitName("player") then
+			table.remove(ShareXPDB.data, k)
+		end
+	end
 end
 
 local function ShareXP_Refresh()
