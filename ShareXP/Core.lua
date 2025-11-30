@@ -19,6 +19,71 @@ local Settings = {
 
 local MAX_LEVEL = 80
 
+local ErrorFilter = {
+        "send message of this type until you reach level",
+        "your target is dead",
+        "there is nothing to attack",
+        "not enough rage",
+        "not enough energy",
+        "that ability requires combo points",
+        "not enough runic power",
+        "not enough runes",
+        "invalid target",
+        "you have no target",
+        "you cannot attack that target",
+        "spell is not ready yet",
+        "ability is not ready yet",
+        "you can't do that yet",
+        "you are too far away",
+        "out of range",
+        "another action is in progress",
+        "not enough mana",
+        "not enough focus"
+}
+
+local origErrorOnEvent = UIErrorsFrame:GetScript("OnEvent")
+UIErrorsFrame:SetScript("OnEvent", function(self, event, ...)
+        if AddOnMessagesFrame[event] then
+                return AddOnMessagesFrame[event](self, event, ...)
+        else
+                return origErrorOnEvent(self, event, ...)
+        end
+end)
+
+function AddOnMessagesFrame:UI_ERROR_MESSAGE(event, name, ...)
+        for k, v in ipairs(ErrorFilter) do
+                if( string.find( string.lower(name), v ) ) then
+                        return
+                end
+        end
+
+        return origErrorOnEvent(self, event, name, ...)
+end
+
+local function GetPrefix(msg)
+        local index = string.find(msg, ":")
+
+        if index and index > 1 then
+                return gsub(msg, 1, index - 1)
+        else
+                return nil
+        end
+end
+
+local function QueueAddOnMessage(msg)
+        if UnitLevel("player") < 15 then return end
+
+        for i, existingMsg in ipairs(f.messages) do
+                if existingMsg == msg then return end
+                if GetPrefix(existingMsg) == GetPrefix(msg) and GetPrefix(existingMsg) ~= nil then
+                        f.messages[i] = msg
+                        return
+                end
+        end
+
+        table.insert(f.messages, msg)
+end
+
 local function ucfirst(str)
 	return string.upper(string.sub(str, 1, 1))..string.lower(string.sub(str, 2))
 end
