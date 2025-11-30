@@ -1,6 +1,6 @@
 local f = CreateFrame("frame", "ShareXPFrame", UIParent)
 
-f.messages = []
+f.messages = {}
 f.channel = "ShareXP"
 
 local numBars = 0
