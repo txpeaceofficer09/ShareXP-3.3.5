@@ -1,5 +1,8 @@
 local f = CreateFrame("frame", "ShareXPFrame", UIParent)
 
+f.messages = []
+f.channel = "ShareXP"
+
 local numBars = 0
 local barSize = 16
 local barWidth = 200
@@ -46,7 +49,7 @@ local ErrorFilter = {
 local origErrorOnEvent = UIErrorsFrame:GetScript("OnEvent")
 UIErrorsFrame:SetScript("OnEvent", function(self, event, ...)
         if ShareXPFrame[event] then
-                return AddOnMessagesFrame[event](self, event, ...)
+                return ShareXPFrame[event](self, event, ...)
         else
                 return origErrorOnEvent(self, event, ...)
         end
@@ -361,7 +364,7 @@ local function OnEvent(self, event, ...)
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
-		if ( chan == "AddOnMessages" and IsInParty(name) ) then
+		if ( chan == self.channel and IsInParty(name) ) then
 			local type, args = string.split(":", msg, 2)
 
 			if name == UnitName("player") then
