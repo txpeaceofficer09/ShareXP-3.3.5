@@ -327,6 +327,7 @@ end
 local function SendAddOnMessage()
 	if GetChannelName(channel) > 0 then
 		SendChatMessage(messages[1], "CHANNEL", nil, GetChannelName(channel))
+		table.remove(messages, 1)
 	end
 end
 
@@ -363,13 +364,7 @@ local function OnEvent(self, event, ...)
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
-		if name == UnitName("player") and chan == channel then
-			print(msg, name, chan)
-			for k, v in ipairs(messages) do
-				print(k, v)
-			end
-		end
-
+		--[[
 		if name == UnitName("player") and chan == channel then
 			for k, v in ipairs(messages) do
 				if v == msg then
@@ -378,6 +373,7 @@ local function OnEvent(self, event, ...)
 				end
 			end
 		end
+		]]
 
 		if ( chan == channel and IsInParty(name) ) then
 			local type, args = string.split(":", msg, 2)
