@@ -439,9 +439,37 @@ f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("PLAYER_XP_UPDATE")
 f:RegisterEvent("PLAYER_LEVEL_UP")
 f:RegisterEvent("RAID_ROSTER_UPDATE")
---f:RegisterEvent("PARTY_MEMBERS_CHANGED")
+f:RegisterEvent("PARTY_MEMBERS_CHANGED")
+
+local function OnUpdate(self, elapsed)
+        self.timer = (self.timer or 0) + elapsed
+        --self.timer2 = (self.timer2 or 0) + elapsed
+        self.lastMessageTime = self.lastMessageTime or GetTime()
+
+        if self.timer > 0.2 then
+                --if GetTime() - self.lastMessageTime > MESSAGE_DELAY and (self.counter or 0) < 3 then
+                if GetTime() - self.lastMessageTime > 5 then
+                        if #(self.messages) > 0 then
+                                SendAddOnMessage()
+                        end
+                end
+
+                self.timer = 0
+        end
+
+        --[[
+        if self.timer2 >= MESSAGE_DELAY then
+                if (self.counter or 0) > 0 then
+                        self.counter = self.counter - 1
+                end
+
+                self.timer2 = 0
+        end
+        ]]
+end
 
 f:SetScript("OnEvent", OnEvent)
+f:SetScript("OnUpdate", OnUpdate)
 
 local function SlashCmd(...)
 	local cmd, params = string.split(" ", string.lower(...), 2)
