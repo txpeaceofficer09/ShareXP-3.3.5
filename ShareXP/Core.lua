@@ -225,9 +225,11 @@ end
 local function Enable()
 	JoinChannelByName(channel)
 
+	--[[
 	for i=1,NUM_CHAT_WINDOWS,1 do
 		RemoveChatWindowChannel(i, channel)
 	end
+	]]
 
 	QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
 	--QueueAddOnMessage("REFRESH")
