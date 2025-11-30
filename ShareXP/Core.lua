@@ -327,7 +327,6 @@ end
 
 local function SendAddOnMessage()
 	if GetChannelName(f.channel) > 0 then
-		print("[SHAREXP]: sending ("..f.messages[1]..")")
 		SendChatMessage(f.messages[1], "CHANNEL", nil, GetChannelName(f.channel))
 	end
 end
@@ -364,6 +363,8 @@ local function OnEvent(self, event, ...)
 		--end
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
+
+		print(msg, name, chan)
 
 		if name == UnitName("player") and chan == self.channel then
 			for k, v in ipairs(self.messages) do
