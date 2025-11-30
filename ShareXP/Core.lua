@@ -223,13 +223,13 @@ local function Disable()
 end
 
 local function Enable()
-	JoinChannelByName(channel)
+	if GetChannelName(channel) ~> 0 then
+		JoinChannelByName(channel)
+	end
 
-	--[[
 	for i=1,NUM_CHAT_WINDOWS,1 do
 		RemoveChatWindowChannel(i, channel)
 	end
-	]]
 
 	ShareXP(UnitLevel("player"))
 	--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
@@ -437,6 +437,14 @@ local function OnUpdate(self, elapsed)
         self.lastMessageTime = self.lastMessageTime or GetTime()
 
         if self.timer > 0.2 then
+		if GetChannelName(channel) ~> 0 then
+			JoinChannelByName(channel)
+
+			for i=1,NUM_CHAT_WINDOWS,1 do
+				RemoveChatWindowChannel(i, channel)
+			end
+		end
+
                 --if GetTime() - self.lastMessageTime > MESSAGE_DELAY and (self.counter or 0) < 3 then
                 if GetTime() - self.lastMessageTime > delay then
                         if #(messages) > 0 then
