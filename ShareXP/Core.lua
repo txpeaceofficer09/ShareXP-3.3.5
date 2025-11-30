@@ -211,7 +211,7 @@ local function ShareXP(lvl)
 end
 
 local function Disable()
-	LeaveChannelByName("ShareXP")
+	LeaveChannelByName(f.channel)
 
 	for i=1,numBars,1 do
 		_G["ShareXPBar"..i]:Hide()
@@ -221,10 +221,10 @@ local function Disable()
 end
 
 local function Enable()
-	JoinChannelByName("ShareXP")
+	JoinChannelByName(f.channel)
 
 	for i=1,NUM_CHAT_WINDOWS,1 do
-		RemoveChatWindowChannel(i, "ShareXP")
+		RemoveChatWindowChannel(i, f.channel)
 	end
 
 	QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
@@ -325,8 +325,8 @@ function ShareXP_AddBar(i)
 end
 
 local function SendAddOnMessage()
-	if GetChannelName("ShareXP") > 0 then
-		SendChatMessage(f.messages[1], "CHANNEL", nil, GetChannelName("ShareXP"))
+	if GetChannelName(f.channel) > 0 then
+		SendChatMessage(f.messages[1], "CHANNEL", nil, GetChannelName(f.channel))
 		if f.debug == "on" then print("[SHAREXP]: Sent AddOn message.") end
 	end
 end
