@@ -345,9 +345,9 @@ local function OnEvent(self, event, ...)
 			self:SetMovable(true)
 		end
 
-		if UnitLevel("player") < MAX_LEVEL then
+		--if UnitLevel("player") < MAX_LEVEL then
 			QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-		end
+		--end
 
 		self:SetPoint(ShareXPDB.p, UIParent, ShareXPDB.p, ShareXPDB.x, ShareXPDB.y)
 	elseif ( event == "PLAYER_ENTERING_WORLD" ) then
@@ -358,13 +358,13 @@ local function OnEvent(self, event, ...)
 		end
 	elseif ( event == "PLAYER_LEVEL_UP" ) then
 		local lvl = ...
-		if lvl < MAX_LEVEL then
+		--if lvl < MAX_LEVEL then
 			QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl))
-		end
+		--end
 	elseif ( event == "PLAYER_XP_UPDATE" ) then
-		if UnitLevel("player") < MAX_LEVEL then
+		--if UnitLevel("player") < MAX_LEVEL then
 			QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-		end
+		--end
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
@@ -391,9 +391,9 @@ local function OnEvent(self, event, ...)
 				end
 			elseif ( type == "REFRESH" ) then
 				if name ~= UnitName("player") then
-					if UnitLevel("player") < MAX_LEVEL then
+					--if UnitLevel("player") < MAX_LEVEL then
 						QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-					end
+					--end
 				end
 			end
 		end
@@ -418,7 +418,7 @@ local function OnEvent(self, event, ...)
 		end
 	end
 
-	if event.gsub(1, 9) == "CHAT_MSG_" then
+	if event:gsub(1, 9) == "CHAT_MSG_" then
 		local _, name = ...
 
 		if name == UnitName("player") then
@@ -454,8 +454,13 @@ local function OnUpdate(self, elapsed)
                 --if GetTime() - self.lastMessageTime > MESSAGE_DELAY and (self.counter or 0) < 3 then
                 if GetTime() - self.lastMessageTime > 5 then
                         if #(self.messages) > 0 then
+				print("[SHAREXP]: sending next message.")
                                 SendAddOnMessage()
+			else
+				print("[SHAREXP]: no messages to send.")
                         end
+		else
+			print("[SHAREXP]: last message too recent.")
                 end
 
                 self.timer = 0
