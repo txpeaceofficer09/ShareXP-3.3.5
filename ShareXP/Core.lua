@@ -83,14 +83,10 @@ local function QueueAddOnMessage(msg)
         for i, existingMsg in ipairs(f.messages) do
                 if existingMsg == msg then return end
                 if GetPrefix(existingMsg) == GetPrefix(msg) and GetPrefix(existingMsg) ~= nil then
-			-- f.messages[i] = msg
-			-- if f.debug then print("[SHAREXP]: message found at index "..i.." ("..msg..")") end
-                        -- return
 			table.remove(f.messages, i)
                 end
         end
 
-	if f.debug then print("[SHAREXP]: adding message to queue ("..msg..")") end
         table.insert(f.messages, msg)
 end
 
@@ -368,16 +364,16 @@ local function OnEvent(self, event, ...)
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
-		if ( chan == self.channel and IsInParty(name) ) then
-			local type, args = string.split(":", msg, 2)
-
-			if name == UnitName("player") then
-				for k, v in ipairs(f.messages) do
-					if v == msg then
-						table.remove(f.messages, k)
-					end
+		if name == UnitName("player") and chan == self.channel then
+			for k, v in ipairs(self.messages) do
+				if v == msg then
+					table.remove(f.messages, k)
 				end
 			end
+		end
+
+		if ( chan == self.channel and IsInParty(name) ) then
+			local type, args = string.split(":", msg, 2)
 
 			if ( type == "XP" ) then
 				local unitName, class, curXP, maxXP, lvl = string.split(":", args, 5)
@@ -423,7 +419,6 @@ local function OnEvent(self, event, ...)
 
 		if name == UnitName("player") then
 			f.lastMessageTime = GetTime()
-			if f.debug == true then print("[SHAREXP]: Last message time "..f.lastMessageTime) end
 		end
 	end
 end
@@ -433,7 +428,7 @@ f:RegisterEvent("CHAT_MSG_PARTY")
 f:RegisterEvent("CHAT_MSG_PARTY_LEADER")
 f:RegisterEvent("CHAT_MSG_RAID")
 f:RegisterEvent("CHAT_MSG_RAID_LEADER")
---f:RegisterEvent("CHAT_MSG_GUILD_OFFICER")
+f:RegisterEvent("CHAT_MSG_GUILD_OFFICER")
 f:RegisterEvent("CHAT_MSG_YELL")
 f:RegisterEvent("CHAT_MSG_SAY")
 f:RegisterEvent("CHAT_MSG_CHANNEL")
@@ -454,13 +449,8 @@ local function OnUpdate(self, elapsed)
                 --if GetTime() - self.lastMessageTime > MESSAGE_DELAY and (self.counter or 0) < 3 then
                 if GetTime() - self.lastMessageTime > 5 then
                         if #(self.messages) > 0 then
-				print("[SHAREXP]: sending next message.")
                                 SendAddOnMessage()
-			else
-				print("[SHAREXP]: no messages to send.")
                         end
-		else
-			print("[SHAREXP]: last message too recent.")
                 end
 
                 self.timer = 0
