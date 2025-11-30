@@ -231,8 +231,9 @@ local function Enable()
 	end
 	]]
 
-	QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-	--QueueAddOnMessage("REFRESH")
+	ShareXP(UnitLevel("player"))
+	--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
+	QueueAddOnMessage("REFRESH")
 
 	PruneTable()
 
@@ -345,9 +346,7 @@ local function OnEvent(self, event, ...)
 			self:SetMovable(true)
 		end
 
-		--if UnitLevel("player") < MAX_LEVEL then
-			QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-		--end
+		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
 
 		self:SetPoint(ShareXPDB.p, UIParent, ShareXPDB.p, ShareXPDB.x, ShareXPDB.y)
 	elseif ( event == "PLAYER_ENTERING_WORLD" ) then
@@ -358,9 +357,11 @@ local function OnEvent(self, event, ...)
 		end
 	elseif ( event == "PLAYER_LEVEL_UP" ) then
 		local lvl = ...
-		QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl))
+		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl))
+		ShareXP(lvl)
 	elseif ( event == "PLAYER_XP_UPDATE" ) then
-		QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
+		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
+		ShareXP(UnitLevel("player"))
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
@@ -380,6 +381,7 @@ local function OnEvent(self, event, ...)
 			elseif ( type == "REFRESH" ) then
 				if name ~= UnitName("player") then
 					--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
+					ShareXP(UnitLevel("player"))
 				end
 			end
 		end
@@ -391,9 +393,8 @@ local function OnEvent(self, event, ...)
 		end
 
 		ShareXP_Refresh()
-		if UnitLevel("player") < MAX_LEVEL then
-			QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-		end
+		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
+		ShareXP(UnitLevel("player"))
 
 		PruneTable()
 
