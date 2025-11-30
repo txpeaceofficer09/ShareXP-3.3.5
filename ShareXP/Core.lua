@@ -364,7 +364,9 @@ local function OnEvent(self, event, ...)
 	elseif ( event == "CHAT_MSG_CHANNEL" ) then
 		local msg, name, _, _, _, _, _, _, chan = ...		
 
-		print(msg, name, chan)
+		if name == UnitName("player") then
+			print(msg, name, chan)
+		end
 
 		if name == UnitName("player") and chan == self.channel then
 			for k, v in ipairs(self.messages) do
@@ -450,7 +452,7 @@ local function OnUpdate(self, elapsed)
 
         if self.timer > 0.2 then
                 --if GetTime() - self.lastMessageTime > MESSAGE_DELAY and (self.counter or 0) < 3 then
-                if GetTime() - self.lastMessageTime > 5 then
+                if GetTime() - self.lastMessageTime > delay then
                         if #(self.messages) > 0 then
                                 SendAddOnMessage()
                         end
@@ -477,11 +479,9 @@ local function SlashCmd(...)
 	local cmd, params = string.split(" ", string.lower(...), 2)
 
 	if cmd == "off" then
-		--f:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		f.debug = true
                 print("[SHAREXP]: debug off")
 	elseif cmd == "on" then
-		--f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		f.debug = false
                 print("[SHAREXP]: debug on")
 	elseif cmd == "remove" then
