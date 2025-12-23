@@ -8,10 +8,12 @@ local barSize = 16
 local barWidth = 200
 local delay = 5
 
+--GetAccountExpansionLevel() - Returns registered expansion. (0=WoW, 1=BC, 2=WotLK, 3=Cata, 4=Mists, 5=Warlords, 6=Legion, 7=BfA, 8=Shadowlands)
+
 ShareXPDB = {
-	["p"] = "RIGHT",
-	["x"] = 0,
-	["y"] = 0,
+	["p"] = "TOPLEFT",
+	["x"] = 200,
+	["y"] = 200,
 	["lock"] = false,
 	["data"] = {},
 }
