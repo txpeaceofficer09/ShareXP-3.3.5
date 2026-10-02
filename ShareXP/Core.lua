@@ -67,32 +67,6 @@ function ShareXPFrame:UI_ERROR_MESSAGE(event, name, ...)
         return origErrorOnEvent(self, event, name, ...)
 end
 
-local function GetPrefix(msg)
-        local index = string.find(msg, ":")
-
-        if index and index > 1 then
-                return gsub(msg, 1, index - 1)
-        else
-                return nil
-        end
-end
-
-local function QueueAddOnMessage(msg)
-        if UnitLevel("player") < 15 then return end
-	if UnitLevel("player") == MAX_LEVEL and GetPrefix(msg) == "XP" then return end
-
-	--[[
-        for i, existingMsg in ipairs(messages) do
-                if existingMsg == msg then return end
-                if GetPrefix(existingMsg) == GetPrefix(msg) and GetPrefix(existingMsg) ~= nil then
-			table.remove(messages, i)
-                end
-        end
-	]]
-
-        table.insert(messages, msg)
-end
-
 local function ucfirst(str)
 	return string.upper(string.sub(str, 1, 1))..string.lower(string.sub(str, 2))
 end
@@ -184,7 +158,7 @@ local function ShareXP_Refresh()
 		local class = string.upper(ShareXPDB.data[v].class)
 
 		_G["ShareXPBar"..index.."Name"]:SetText(name)
-		_G["ShareXPBar"..index.."Percent"]:SetText(("%s%% [%s]"):format(percent, lvl))	
+		_G["ShareXPBar"..index.."Percent"]:SetText(("%s%% [%s]"):format(percent or "?", lvl or "?"))
 
 		if ( class ~= nil and RAID_CLASS_COLORS[class] ~= nil ) then
 			_G[bar:GetName().."Status"]:SetStatusBarColor(RAID_CLASS_COLORS[class].r, RAID_CLASS_COLORS[class].g, RAID_CLASS_COLORS[class].b, 1)
@@ -206,47 +180,13 @@ local function ShareXP_Refresh()
 	end
 end
 
-local function ShareXP(lvl)
-	if lvl ~= nil then
-		QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl))
-	else
-		QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-	end
-end
-
-local function Disable()
-	LeaveChannelByName(channel)
-
-	for i=1,numBars,1 do
-		_G["ShareXPBar"..i]:Hide()
-	end
-
-	ShareXPFrame:Hide()
-end
-
-local function Enable()
-	if GetChannelName(channel) == 0 then
-		JoinChannelByName(channel)
-	end
-
-	for i=1,NUM_CHAT_WINDOWS,1 do
-		RemoveChatWindowChannel(i, channel)
-	end
-
-	ShareXP(UnitLevel("player"))
-	--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-	QueueAddOnMessage("REFRESH")
-
-	PruneTable()
-
-	ShareXP_Refresh()
-
-	ShareXPFrame:Show()
-end
-
 local function AddUnit(name, class, curXP, maxXP, lvl)
 	local index = false
 	local percent = ("%.0f"):format((curXP / maxXP)*100)
+
+	curXP = tonumber(curXP)
+	maxXP = tonumber(maxXP)
+	lvl = tonumber(lvl)
 
 	for k,v in pairs(ShareXPDB.data) do
 		if v.name == name then
@@ -265,6 +205,18 @@ local function AddUnit(name, class, curXP, maxXP, lvl)
 	end
 
 	ShareXP_Refresh()
+end
+
+local function SendXP(lvl)
+	--SendAddonMessage("ShareXP", ("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player")), "GUILD")
+
+	if ( GetNumRaidMembers() > 0 ) then
+		SendAddonMessage("ShareXP", ("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player")), "RAID")
+	elseif ( GetNumPartyMembers() > 0 ) then
+		SendAddonMessage("ShareXP", ("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player")), "PARTY")
+	end
+
+	AddUnit(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player"))
 end
 
 f:SetSize(barWidth, barSize)
@@ -317,7 +269,6 @@ function ShareXP_AddBar(i)
 	sb:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
 	sb:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 0, 0)
 
-
 	local t = sb:CreateFontString(bar:GetName().."Name", "OVERLAY", "NumberFont_Outline_Med")
 	t:SetJustifyH("LEFT")
 	t:SetPoint("LEFT", sb, "LEFT", 2, 0)
@@ -331,13 +282,6 @@ function ShareXP_AddBar(i)
 	return bar
 end
 
-local function SendAddOnMessage()
-	if GetChannelName(channel) > 0 then
-		SendChatMessage(messages[1], "CHANNEL", nil, GetChannelName(channel))
-		table.remove(messages, 1)
-	end
-end
-
 local function OnEvent(self, event, ...)
 	if ( event == "VARIABLES_LOADED" ) then
 		if ShareXPDB.lock == true then
@@ -348,84 +292,54 @@ local function OnEvent(self, event, ...)
 			self:SetMovable(true)
 		end
 
-		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-
 		self:SetPoint(ShareXPDB.p, UIParent, ShareXPDB.p, ShareXPDB.x, ShareXPDB.y)
 	elseif ( event == "PLAYER_ENTERING_WORLD" ) then
-		if GetNumGroupMembers() == 0 then
-			Disable()
-		else
-			Enable()
-		end
+		SendXP()
 	elseif ( event == "PLAYER_LEVEL_UP" ) then
 		local lvl = ...
-		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), lvl))
-		ShareXP(lvl)
+
+		SendXP(lvl)
 	elseif ( event == "PLAYER_XP_UPDATE" ) then
-		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-		ShareXP(UnitLevel("player"))
-	elseif ( event == "CHAT_MSG_CHANNEL" ) then
-		local msg, name, _, _, _, _, _, _, chan = ...		
+		SendXP()
+	elseif ( event == "CHAT_MSG_ADDON" ) then
+		local prefix, msg, type, sender = ...
 
-		if ( chan == channel and IsInParty(name) ) then
-			local type, args = string.split(":", msg, 2)
+		if prefix == "ShareXP" then
+			local cmd, args = string.split(":", msg, 2)
 
-			if ( type == "XP" ) then
+			if ( cmd == "XP" ) then
 				local unitName, class, curXP, maxXP, lvl = string.split(":", args, 5)
-				
+
 				AddUnit(unitName, class, curXP, maxXP, lvl)
-			elseif ( type == "VERSION" ) then
+			elseif ( cmd == "VERSION" ) then
 				local maj, min, rev = string.split(".", args)
 
 				if ( maj >= ShareXP_VERSION.maj and min >= ShareXP_VERSION.min and rev > ShareXP_VERSION.rev ) then
 					print(("ShareXP: newer version available. Yours: %d.%d.%d New: %d.%d.%d (https://www.trap-nine.com/)"):format(ShareXP_VERSION.maj, ShareXP_VERSION.min, ShareXP_VERSION.rev, maj, min, rev))
 				end
-			elseif ( type == "REFRESH" ) then
+			elseif ( cmd == "REFRESH" ) then
 				if name ~= UnitName("player") then
-					--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-					ShareXP(UnitLevel("player"))
+					SendXP(UnitLevel("player"))
 				end
 			end
 		end
 	elseif ( event == "RAID_ROSTER_UPDATE" or event == "PARTY_MEMBERS_CHANGED" ) then
-		if GetNumGroupMembers() > 0 then
-			Disable()
-		elseif GetNumGroupMembers() > 0 then
-			Enable()
-		end
-
 		ShareXP_Refresh()
-		--QueueAddOnMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), UnitClass("player"), UnitXP("player"), UnitXPMax("player"), UnitLevel("player")))
-		ShareXP(UnitLevel("player"))
+		SendXP(UnitLevel("player"))
 
-		PruneTable()
+		--PruneTable()
 
+		--[[
 		if ( GetNumGroupMembers() == 0 ) then
 			ShareXPFrame:Hide()
 		else
 			ShareXPFrame:Show()
 		end
-	end
-
-	if event:gsub(1, 9) == "CHAT_MSG_" then
-		local _, name = ...
-
-		if name == UnitName("player") then
-			f.lastMessageTime = GetTime()
-		end
+		]]
 	end
 end
 
-f:RegisterEvent("CHAT_MSG_GUILD")
-f:RegisterEvent("CHAT_MSG_PARTY")
-f:RegisterEvent("CHAT_MSG_PARTY_LEADER")
-f:RegisterEvent("CHAT_MSG_RAID")
-f:RegisterEvent("CHAT_MSG_RAID_LEADER")
-f:RegisterEvent("CHAT_MSG_GUILD_OFFICER")
-f:RegisterEvent("CHAT_MSG_YELL")
-f:RegisterEvent("CHAT_MSG_SAY")
-f:RegisterEvent("CHAT_MSG_CHANNEL")
-f:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
+f:RegisterEvent("CHAT_MSG_ADDON")
 f:RegisterEvent("VARIABLES_LOADED")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("PLAYER_XP_UPDATE")
@@ -433,68 +347,4 @@ f:RegisterEvent("PLAYER_LEVEL_UP")
 f:RegisterEvent("RAID_ROSTER_UPDATE")
 f:RegisterEvent("PARTY_MEMBERS_CHANGED")
 
-local function OnUpdate(self, elapsed)
-        self.timer = (self.timer or 0) + elapsed
-        --self.timer2 = (self.timer2 or 0) + elapsed
-        self.lastMessageTime = self.lastMessageTime or GetTime()
-
-        if self.timer > 0.2 then
-		if GetChannelName(channel) == 0 then
-			JoinChannelByName(channel)
-
-			for i=1,NUM_CHAT_WINDOWS,1 do
-				RemoveChatWindowChannel(i, channel)
-			end
-		end
-
-                --if GetTime() - self.lastMessageTime > MESSAGE_DELAY and (self.counter or 0) < 3 then
-                if GetTime() - self.lastMessageTime > delay then
-                        if #(messages) > 0 then
-                                SendAddOnMessage()
-                        end
-                end
-
-                self.timer = 0
-        end
-
-        --[[
-        if self.timer2 >= MESSAGE_DELAY then
-                if (self.counter or 0) > 0 then
-                        self.counter = self.counter - 1
-                end
-
-                self.timer2 = 0
-        end
-        ]]
-end
-
 f:SetScript("OnEvent", OnEvent)
-f:SetScript("OnUpdate", OnUpdate)
-
-local function SlashCmd(...)
-	local cmd, params = string.split(" ", string.lower(...), 2)
-
-	if cmd == "off" then
-		f.debug = true
-                print("[SHAREXP]: debug off")
-	elseif cmd == "on" then
-		f.debug = false
-                print("[SHAREXP]: debug on")
-	elseif cmd == "remove" then
-		table.remove(messages, 1)
-		for k,v in ipairs(messages) do
-			print(k, v)
-		end	
-	elseif cmd == "print" then
-		for k,v in ipairs(messages) do
-			print(k, v)
-		end
-	elseif cmd == "reset" then
-		ShareXPDB.data = {}
-		ShareXP_Refresh()
-	end
-end
-
-SLASH_ShareXP1 = "/sxp"
-SLASH_ShareXP2 = "/sharexp"
-SlashCmdList["ShareXP"] = SlashCmd
