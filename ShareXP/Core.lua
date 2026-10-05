@@ -1,14 +1,9 @@
 local f = CreateFrame("frame", "ShareXPFrame", UIParent)
 
-local messages = {}
-local channel = "ShareXP"
-
 local numBars = 0
-local barSize = 16
+local fontSize = 8
+local barSize = fontSize + 4
 local barWidth = 200
-local delay = 5
-
---GetAccountExpansionLevel() - Returns registered expansion. (0=WoW, 1=BC, 2=WotLK, 3=Cata, 4=Mists, 5=Warlords, 6=Legion, 7=BfA, 8=Shadowlands)
 
 ShareXPDB = {
 	["p"] = "TOPLEFT",
@@ -24,10 +19,19 @@ local Settings = {
 	["refresh_rate"] = 2,
 }
 
---local MAX_LEVEL = 80
-local expansion = GetAccountExpansionLevel()
+local events = {
+	"CHAT_MSG_ADDON",
+	"VARIABLES_LOADED",
+	"PLAYER_ENTERING_WORLD",
+	"PLAYER_XP_UPDATE",
+	"PLAYER_LEVEL_UP",
+	"RAID_ROSTER_UPDATE",
+	"PARTY_MEMBERS_CHANGED"
+}
 
+local expansion = GetAccountExpansionLevel()
 local MAX_LEVEL = 0
+
 if expansion == 0 then
 	MAX_LEVEL = 60
 elseif expansion == 1 then
@@ -89,36 +93,6 @@ function ShareXPFrame:UI_ERROR_MESSAGE(event, name, ...)
         return origErrorOnEvent(self, event, name, ...)
 end
 
-local function ucfirst(str)
-	return string.upper(string.sub(str, 1, 1))..string.lower(string.sub(str, 2))
-end
-
-local function ShortNumber(number)
-	if number >= 1000000000 then
-		return ("%.2fB"):format(number/1000000000)
-	elseif number >= 1000000 then
-		return ("%.2fM"):format(number/1000000)
-	elseif number >= 1000 then
-		return ("%.2fK"):format(number/1000)
-	else
-		return number
-	end
-end
-
-local function DecimalToHexColor(r, g, b, a)
-	return ("|c%02x%02x%02x%02x"):format(a*255, r*255, g*255, b*255)
-end
-
-local function TableSum(table)
-	local retVal = 0
-
-	for _, n in ipairs(table) do
-		retVal = retVal + n
-	end
-
-	return retVal
-end
-
 local function unitIndex(name)
 	for k,v in pairs(ShareXPDB.data) do
 		if v["name"] == name then
@@ -162,14 +136,14 @@ local function IsGuildMember(playerName)
 	local i = 1
 
 	while GetGuildRosterInfo(i) ~= nil do
-		local name = GetGuildRosterInfo(i)
+		local name, rank, rankIndex, level, class, zone, note, officerNote, online, _, classFileName = GetGuildRosterInfo(i)
 
-		if playerName == name then return true end
+		if playerName == name then return true, online end
 
 		i = i + 1
 	end
 
-	return false
+	return false, false
 end
 
 local function PruneTable()
@@ -182,7 +156,13 @@ end
 
 local function ShareXP_Refresh()
 	local sortTbl = {}
-	for k,v in ipairs(ShareXPDB.data) do table.insert(sortTbl, k) end
+	for k,v in ipairs(ShareXPDB.data) do
+		local inGuild, online = IsGuildMember(v.name)
+
+		if IsInParty(v.name) or ( inGuild and online ) then
+			table.insert(sortTbl, k)
+		end
+	end
 	table.sort(sortTbl, function(a,b) return ShareXPDB.data[a].percent > ShareXPDB.data[b].percent end)
 
 	local index = 1
@@ -193,6 +173,8 @@ local function ShareXP_Refresh()
 		local lvl = ShareXPDB.data[v].lvl
 		local class = string.upper(ShareXPDB.data[v].class)
 
+		if lvl == MAX_LEVEL then percent = 100 end
+
 		_G["ShareXPBar"..index.."Name"]:SetText(name)
 		_G["ShareXPBar"..index.."Percent"]:SetText(("%s%% [%s]"):format(percent or "?", lvl or "?"))
 
@@ -201,9 +183,9 @@ local function ShareXP_Refresh()
 		else
 			_G[bar:GetName().."Status"]:SetStatusBarColor(0, 1, 0, 1)
 		end
-		_G[bar:GetName().."Status"]:SetValue(ShareXPDB.data[v].percent)
+		_G[bar:GetName().."Status"]:SetValue(percent)
 
-		if IsInParty(ShareXPDB.data[v].name) ~= false or IsGuildMember(ShareXPDB.data[v].name) ~= false then
+		if IsInParty(name) ~= false or IsGuildMember(name) ~= false then
 			bar:Show()
 			index = index + 1
 		end
@@ -275,7 +257,7 @@ f:SetBackdrop( { bgFile = "Interface\\TargetingFrame\\UI-StatusBar", edgeFile = 
 f:SetBackdropColor(0.8, 0, 1, 1)
 
 local title = f:CreateFontString(f:GetName().."Text", "OVERLAY")
-title:SetFont("Fonts\\ARIALN.ttf", 12, "OUTLINE")
+title:SetFont("Interface\\AddOns\\ShareXP\\Audiowide-Regular.ttf", fontSize, "OUTLINE")
 title:SetAllPoints(f)
 title:SetJustifyH("LEFT")
 title:SetText("ShareXP")
@@ -305,11 +287,13 @@ function ShareXP_AddBar(i)
 	sb:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
 	sb:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 0, 0)
 
-	local t = sb:CreateFontString(bar:GetName().."Name", "OVERLAY", "NumberFont_Outline_Med")
+	local t = sb:CreateFontString(bar:GetName().."Name", "OVERLAY")
+	t:SetFont("Interface\\AddOns\\ShareXP\\Audiowide-Regular.ttf", fontSize, "OUTLINE")
 	t:SetJustifyH("LEFT")
 	t:SetPoint("LEFT", sb, "LEFT", 2, 0)
 
-	local t = sb:CreateFontString(bar:GetName().."Percent", "OVERLAY", "NumberFont_Outline_Med")
+	local t = sb:CreateFontString(bar:GetName().."Percent", "OVERLAY")
+	t:SetFont("Interface\\AddOns\\ShareXP\\Audiowide-Regular.ttf", fontSize, "OUTLINE")
 	t:SetJustifyH("RIGHT")
 	t:SetPoint("RIGHT", sb, "RIGHT", -2, 0)
 
@@ -329,15 +313,27 @@ local function OnEvent(self, event, ...)
 		end
 
 		self:SetPoint(ShareXPDB.p, UIParent, ShareXPDB.p, ShareXPDB.x, ShareXPDB.y)
-	elseif ( event == "PLAYER_ENTERING_WORLD" ) then
+		return
+	end
+
+	if ( event == "PLAYER_ENTERING_WORLD" ) then
 		SendXP()
-	elseif ( event == "PLAYER_LEVEL_UP" ) then
+		return
+	end
+
+	if ( event == "PLAYER_LEVEL_UP" ) then
 		local lvl = ...
 
 		SendXP(lvl)
-	elseif ( event == "PLAYER_XP_UPDATE" ) then
+		return
+	end
+
+	if ( event == "PLAYER_XP_UPDATE" ) then
 		SendXP()
-	elseif ( event == "CHAT_MSG_ADDON" ) then
+		return
+	end
+
+	if ( event == "CHAT_MSG_ADDON" ) then
 		local prefix, msg, type, sender = ...
 
 		if prefix == "ShareXP" then
@@ -359,7 +355,10 @@ local function OnEvent(self, event, ...)
 				end
 			end
 		end
-	elseif ( event == "RAID_ROSTER_UPDATE" or event == "PARTY_MEMBERS_CHANGED" ) then
+		return
+	end
+
+	if ( event == "RAID_ROSTER_UPDATE" or event == "PARTY_MEMBERS_CHANGED" ) then
 		ShareXP_Refresh()
 		SendXP(UnitLevel("player"))
 
@@ -372,15 +371,12 @@ local function OnEvent(self, event, ...)
 			ShareXPFrame:Show()
 		end
 		]]
+		return
 	end
 end
 
-f:RegisterEvent("CHAT_MSG_ADDON")
-f:RegisterEvent("VARIABLES_LOADED")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:RegisterEvent("PLAYER_XP_UPDATE")
-f:RegisterEvent("PLAYER_LEVEL_UP")
-f:RegisterEvent("RAID_ROSTER_UPDATE")
-f:RegisterEvent("PARTY_MEMBERS_CHANGED")
+for _, event in ipairs(events) do
+	f:RegisterEvent(event)
+end
 
 f:SetScript("OnEvent", OnEvent)
