@@ -24,7 +24,29 @@ local Settings = {
 	["refresh_rate"] = 2,
 }
 
-local MAX_LEVEL = 80
+--local MAX_LEVEL = 80
+local expansion = GetAccountExpansionLevel()
+
+local MAX_LEVEL = 0
+if expansion == 0 then
+	MAX_LEVEL = 60
+elseif expansion == 1 then
+	MAX_LEVEL = 70
+elseif expansion == 2 then
+	MAX_LEVEL = 80
+elseif expansion == 3 then
+	MAX_LEVEL = 85
+elseif expansion == 4 then
+	MAX_LEVEL = 90
+elseif expansion == 5 then
+	MAX_LEVEL = 100
+elseif expansion == 6 then
+	MAX_LEVEL = 110
+elseif expansion == 7 then
+	MAX_LEVEL = 120
+elseif expansion == 8 then
+	MAX_LEVEL = 60
+end
 
 local ErrorFilter = {
         "send message of this type until you reach level",
@@ -136,9 +158,23 @@ local function IsInParty(name)
 	return false
 end
 
+local function IsGuildMember(playerName)
+	local i = 1
+
+	while GetGuildRosterInfo(i) ~= nil do
+		local name = GetGuildRosterInfo(i)
+
+		if playerName == name then return true end
+
+		i = i + 1
+	end
+
+	return false
+end
+
 local function PruneTable()
 	for k,v in ipairs(ShareXPDB.data) do
-		if not IsInParty(v["name"]) and v["name"] ~= UnitName("player") then
+		if not IsInParty(v["name"]) and v["name"] ~= UnitName("player") and not IsGuildMember(v["name"]) then
 			table.remove(ShareXPDB.data, k)
 		end
 	end
@@ -167,7 +203,7 @@ local function ShareXP_Refresh()
 		end
 		_G[bar:GetName().."Status"]:SetValue(ShareXPDB.data[v].percent)
 
-		if IsInParty(ShareXPDB.data[v].name) ~= false then
+		if IsInParty(ShareXPDB.data[v].name) ~= false or IsGuildMember(ShareXPDB.data[v].name) ~= false then
 			bar:Show()
 			index = index + 1
 		end
@@ -327,7 +363,7 @@ local function OnEvent(self, event, ...)
 		ShareXP_Refresh()
 		SendXP(UnitLevel("player"))
 
-		--PruneTable()
+		PruneTable()
 
 		--[[
 		if ( GetNumGroupMembers() == 0 ) then
