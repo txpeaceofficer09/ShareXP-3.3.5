@@ -53,44 +53,44 @@ elseif expansion == 8 then
 end
 
 local ErrorFilter = {
-        "send message of this type until you reach level",
-        "your target is dead",
-        "there is nothing to attack",
-        "not enough rage",
-        "not enough energy",
-        "that ability requires combo points",
-        "not enough runic power",
-        "not enough runes",
-        "invalid target",
-        "you have no target",
-        "you cannot attack that target",
-        "spell is not ready yet",
-        "ability is not ready yet",
-        "you can't do that yet",
-        "you are too far away",
-        "out of range",
-        "another action is in progress",
-        "not enough mana",
-        "not enough focus"
+		"send message of this type until you reach level",
+		"your target is dead",
+		"there is nothing to attack",
+		"not enough rage",
+		"not enough energy",
+		"that ability requires combo points",
+		"not enough runic power",
+		"not enough runes",
+		"invalid target",
+		"you have no target",
+		"you cannot attack that target",
+		"spell is not ready yet",
+		"ability is not ready yet",
+		"you can't do that yet",
+		"you are too far away",
+		"out of range",
+		"another action is in progress",
+		"not enough mana",
+		"not enough focus"
 }
 
 local origErrorOnEvent = UIErrorsFrame:GetScript("OnEvent")
 UIErrorsFrame:SetScript("OnEvent", function(self, event, ...)
-        if ShareXPFrame[event] then
-                return ShareXPFrame[event](self, event, ...)
-        else
-                return origErrorOnEvent(self, event, ...)
-        end
+		if ShareXPFrame[event] then
+				return ShareXPFrame[event](self, event, ...)
+		else
+				return origErrorOnEvent(self, event, ...)
+		end
 end)
 
 function ShareXPFrame:UI_ERROR_MESSAGE(event, name, ...)
-        for k, v in ipairs(ErrorFilter) do
-                if( string.find( string.lower(name), v ) ) then
-                        return
-                end
-        end
+		for k, v in ipairs(ErrorFilter) do
+				if( string.find( string.lower(name), v ) ) then
+						return
+				end
+		end
 
-        return origErrorOnEvent(self, event, name, ...)
+		return origErrorOnEvent(self, event, name, ...)
 end
 
 local function unitIndex(name)
@@ -103,18 +103,18 @@ local function unitIndex(name)
 end
 
 local function GetNumGroupMembers()
-        local party, raid = GetNumPartyMembers(), GetNumRaidMembers()
+		local party, raid = GetNumPartyMembers(), GetNumRaidMembers()
 
-        if raid > 0 then
-                return raid, "raid"
-        elseif party > 0 then
-                return party, "party"
-        else
-                return 0, nil
-        end
+		if raid > 0 then
+				return raid, "raid"
+		elseif party > 0 then
+				return party, "party"
+		else
+				return 0, nil
+		end
 end
 
-local function IsInParty(name)
+local function IsInGroup(name)
 	if ( name == UnitName("player") ) then
 		return true
 	end
@@ -148,7 +148,8 @@ end
 
 local function PruneTable()
 	for k,v in ipairs(ShareXPDB.data) do
-		if not IsInParty(v["name"]) and v["name"] ~= UnitName("player") and not IsGuildMember(v["name"]) then
+		--if not IsInGroup(v["name"]) and v["name"] ~= UnitName("player") and not IsGuildMember(v["name"]) then
+		if not IsInGroup(v.name) and v.name ~= UnitName("player") then
 			table.remove(ShareXPDB.data, k)
 		end
 	end
@@ -159,7 +160,8 @@ local function ShareXP_Refresh()
 	for k,v in ipairs(ShareXPDB.data) do
 		local inGuild, online = IsGuildMember(v.name)
 
-		if IsInParty(v.name) or ( inGuild and online ) then
+		--if IsInGroup(v.name) or ( inGuild and online ) then
+		if IsInGroup(v.name) then
 			table.insert(sortTbl, k)
 		end
 	end
@@ -185,7 +187,7 @@ local function ShareXP_Refresh()
 		end
 		_G[bar:GetName().."Status"]:SetValue(percent)
 
-		if IsInParty(name) ~= false or IsGuildMember(name) ~= false then
+		if IsInGroup(name) ~= false or IsGuildMember(name) ~= false then
 			bar:Show()
 			index = index + 1
 		end
