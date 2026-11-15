@@ -1,7 +1,8 @@
 ## Interface: 30300
 ## Title: ShareXP
-## Version: 1.0.4
-## Author: SoonBeSteak @ Netherwing
-## Notes: Share your current XP level with your group.
+## Version: 1.0.5
+## Author: SoonBeSteak
+## Notes: Share your current XP/paragon with your group.
 ## SavedVariables: ShareXPDB
+## OptionalDeps: SteakMinimap, SteakMinimap_InfoPanel
 Core.lua

@@ -1,0 +1,7 @@
+## Interface: 30300
+## Title: Steak InfoPanel: ShareXP
+## Notes: Share your XP with your group.
+## Author: Soonbesteak
+## Version: 1.1.0
+## Dependencies: SteakMinimap, SteakInfoPanel, ShareXPCore
+Core.lua
