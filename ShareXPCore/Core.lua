@@ -13,6 +13,7 @@ ShareXPCore = {
 		"PARTY_MEMBERS_CHANGED"
 	},
 	frame = CreateFrame("Frame", nil, UIParent),
+	prefix = "ShareXP",
 	Init = function(self)
 		if self.initialized then return end
 		self.initialized = true
@@ -99,7 +100,7 @@ ShareXPCore = {
 	IsInGroup = function(self, name)
 		if ( name == UnitName("player") ) then return true end
 
-		local numMembers, groupType = ShareXP:GetNumGroupMembers()
+		local numMembers, groupType = self:GetNumGroupMembers()
 
 		if numMembers > 0 then
 			for i=1, numMembers, 1 do
@@ -124,6 +125,22 @@ ShareXPCore = {
 
 		return false, false
 	end,
+	GetUnitXP = function(self, name)
+		for _, unit in ipairs(self.data) do
+			if unit.name == name then
+				return unit.name, unit.curXP, unit.maxXP, unit.lvl
+			end
+		end
+
+		return nil
+	end,
+	GetUnitPXP = function(self, name)
+		for _, unit in ipairs(self.data) do
+			return name, pCurXP, pMaxXP, pLvl, pUnlocked, pQuality
+		end
+
+		return nil
+	end,
 	AddUnitXP = function(self, name, class, curXP, maxXP, lvl)
 		local index = false
 
@@ -147,10 +164,17 @@ ShareXPCore = {
 				lvl = lvl
 			})
 		else
-			self.data[index].curXP = curXP
-			self.data[index].maxXP = maxXP
-			self.data[index].lvl = lvl
-			self.data[index].class = class
+			--if self.data[index].maxXP == maxXP and self.data[index].lvl == lvl and self.data[index].curXP < curXP then
+				self.data[index].curXP = curXP
+				self.data[index].maxXP = maxXP
+				self.data[index].lvl = lvl
+				self.data[index].class = class
+			--elseif self.data[index].maxXP < maxXP or self.data[index].lvl < lvl then
+			--	self.data[index].curXP = curXP
+			--	self.data[index].maxXP = maxXP
+			--	self.data[index].lvl = lvl
+			--	self.data[index].class = class
+			--end
 		end
 
 		self:NotifyCallbacks()
@@ -180,12 +204,21 @@ ShareXPCore = {
 				pQuality = quality
 			})
 		else
-			self.data[index].class = class
-			self.data[index].pUnlocked = unlocked
-			self.data[index].pLvl = lvl
-			self.data[index].pCurXP = curXP
-			self.data[index].pMaxXP = maxXP
-			self.data[index].pQuality = quality
+			--if self.data[index].pMaxXP == maxXP and self.data[index].pLvl == lvl and self.data[index].pCurXP < curXP then
+				self.data[index].class = class
+				self.data[index].pUnlocked = unlocked
+				self.data[index].pLvl = lvl
+				self.data[index].pCurXP = curXP
+				self.data[index].pMaxXP = maxXP
+				self.data[index].pQuality = quality
+			--elseif self.data[index].pMaxXP < maxXP or self.data[index].pLvl < lvl then
+			--	self.data[index].class = class
+			--	self.data[index].pUnlocked = unlocked
+			--	self.data[index].pLvl = lvl
+			--	self.data[index].pCurXP = curXP
+			--	self.data[index].pMaxXP = maxXP
+			--	self.data[index].pQuality = quality
+			--end
 		end
 
 		self:NotifyCallbacks()
