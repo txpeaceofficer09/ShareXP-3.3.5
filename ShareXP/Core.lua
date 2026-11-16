@@ -9,12 +9,13 @@ ShareXPDB = {
 }
 
 ShareXP = {
-	rowWidth = 140,
+	rowWidth = 180,
 	rowHeight = 22,
 	barHeight = 10,
 	rowGap = 3,
 	iconSize = 22,
 	fontSize = 8,
+	rows = {},
 	classIconCoords = {
 		DEATHKNIGHT = { 3/8, 4/8, 0, 1/4 },
 		DRUID = { 5/8, 6/8, 0, 1/4 },
@@ -26,6 +27,9 @@ ShareXP = {
 		SHAMAN = { 4/8, 5/8, 2/4, 3/4 },
 		WARLOCK = { 3/8, 4/8, 3/4, 1 },
 		WARRIOR = { 4/8, 5/8, 3/4, 1 }
+	},
+	events = {
+		"VARIABLES_LOADED"
 	},
 	Init = function(self)
 		if self.initialized then return end
@@ -54,9 +58,15 @@ ShareXP = {
 			self:StopMovingOrSizing()
 		end)
 
-		self.frame:RegisterEvent("VARIABLES_LOADED")
+		for _, event in ipairs(self.events) do
+			self.frame:RegisterEvent(event)
+		end
 
-		self.frame:SetScript("OnEvent", self:OnEvent(self, event))
+		self.frame:SetScript("OnEvent", function(_, event, ...)
+			if self[event] then
+				self[event](...)
+			end
+		end)
 
 		self.frame:SetBackdrop( { bgFile = "Interface\\TargetingFrame\\UI-StatusBar", edgeFile = nil, tile = false, tileSize = self.frame:GetWidth(), edgeSize = 0, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
 		self.frame:SetBackdropColor(0.8, 0, 1, 1)
@@ -65,7 +75,9 @@ ShareXP = {
 			ShareXP:RefreshList()
 		end)
 
-		self.frame:HookScript("OnShow", ShareXP:OnShow(self))
+		self.frame:HookScript("OnShow", function(self)
+			self:RefreshList()
+		end)
 	end,
 	CreateFont = function(self, parent, size)
 		local font = parent:CreateFontString(nil, "OVERLAY")
@@ -132,20 +144,20 @@ ShareXP = {
 		row.bar2:SetMinMaxValues(0, 1)
 		row.bar2:SetValue(0)
 
-		row.nameText = CreateFont(row.bar, self.fontSize)
+		row.nameText = self:CreateFont(row.bar, self.fontSize)
 		row.nameText:SetPoint("LEFT", row.bar, "LEFT", 5, 0)
 		row.nameText:SetJustifyH("LEFT")
 		row.nameText:SetWordWrap(false)
 
-		row.valueText = CreateFont(row.bar, self.fontSize)
+		row.valueText = self:CreateFont(row.bar, self.fontSize)
 		row.valueText:SetPoint("RIGHT", row.bar, "RIGHT", -4, 0)
 		row.valueText:SetJustifyH("RIGHT")
 
-		row.valueText2 = CreateFont(row.bar2, self.fontSize)
+		row.valueText2 = self:CreateFont(row.bar2, self.fontSize)
 		row.valueText2:SetPoint("RIGHT", row.bar2, "RIGHT", -4, 0)
 		row.valueText2:SetJustifyH("RIGHT")
 
-		row.valueText3 = CreateFont(row.bar2, self.fontSize)
+		row.valueText3 = self:CreateFont(row.bar2, self.fontSize)
 		row.valueText3:SetPoint("LEFT", row.bar2, "LEFT", 5, 0)
 		row.valueText3:SetJustifyH("LEFT")
 		row.valueText3:SetWordWrap(false)
@@ -246,29 +258,26 @@ ShareXP = {
 			self.rows[index]:Hide()
 		end
 
-		--[[
-		local rowsHeight = #ShareXPCore.data > 0 and (#ShareXPCore.data * self.rowHeight + (#ShareXPCore.data - 1) * self.rowGap) or 0
+		--local rowsHeight = #ShareXPCore.data > 0 and (#ShareXPCore.data * self.rowHeight + (#ShareXPCore.data - 1) * self.rowGap) or 0
+		--local totalHeight = 27 + rowsHeight + 4
 
-		local totalHeight = 27 + rowsHeight + 4
+		--self.frame:SetHeight(math.max(1, totalHeight))
 
-		self.frame:SetHeight(math.max(1, totalHeight))
-
-		self.content:SetHeight(math.max(1, totalHeight))
-		]]
+		--self.content:SetHeight(math.max(1, totalHeight))
 	end,
-	OnShow = function(self)
-		self:RefreshList()
-	end,
-	OnEvent = function(self, event, ...)
+	VARIABLES_LOADED = function(self)
+		local frame = self and self.frame or self
+		if not frame then frame = ShareXP.frame end
+
 		if ShareXPDB.lock == true then
-			self:EnableMouse(false)
-			self:SetMovable(false)
+			frame:EnableMouse(false)
+			frame:SetMovable(false)
 		else
-			self:EnableMouse(true)
-			self:SetMovable(true)
+			frame:EnableMouse(true)
+			frame:SetMovable(true)
 		end
 
-		self:SetPoint(ShareXPDB.p, UIParent, ShareXPDB.p, ShareXPDB.x, ShareXPDB.y)
+		frame:SetPoint(ShareXPDB.p, UIParent, ShareXPDB.p, ShareXPDB.x, ShareXPDB.y)
 	end
 }
 
