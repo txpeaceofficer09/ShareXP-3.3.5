@@ -1,7 +1,6 @@
 ## Interface: 30300
-## Title: Steak InfoPanel: ShareXP
-## Notes: Share your XP with your group.
+## Title: ShareXP: Core
+## Notes: Stores and handles XP/paragon data for your group.
 ## Author: Soonbesteak
 ## Version: 1.0.0
-## Dependencies: SteakMinimap, SteakInfoPanel, ShareXPCore
 Core.lua

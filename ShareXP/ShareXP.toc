@@ -4,5 +4,6 @@
 ## Author: SoonBeSteak
 ## Notes: Share your current XP/paragon with your group.
 ## SavedVariables: ShareXPDB
+## Dependencies: ShareXPCore
 ## OptionalDeps: SteakMinimap, SteakMinimap_InfoPanel
 Core.lua

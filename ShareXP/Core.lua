@@ -56,7 +56,7 @@ ShareXP = {
 
 		self.frame:RegisterEvent("VARIABLES_LOADED")
 
-		self.frame:SetScript("OnEvent", self:OnEvent)
+		self.frame:SetScript("OnEvent", self:OnEvent(self, event))
 
 		self.frame:SetBackdrop( { bgFile = "Interface\\TargetingFrame\\UI-StatusBar", edgeFile = nil, tile = false, tileSize = self.frame:GetWidth(), edgeSize = 0, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
 		self.frame:SetBackdropColor(0.8, 0, 1, 1)
@@ -65,7 +65,7 @@ ShareXP = {
 			ShareXP:RefreshList()
 		end)
 
-		self.frame:HookScript("OnShow", ShareXP:OnShow)
+		self.frame:HookScript("OnShow", ShareXP:OnShow(self))
 	end,
 	CreateFont = function(self, parent, size)
 		local font = parent:CreateFontString(nil, "OVERLAY")
