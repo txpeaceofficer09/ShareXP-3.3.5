@@ -193,8 +193,9 @@ ShareXP = {
 			local row = self:EnsureRow(index)
 
 			row:ClearAllPoints()
-			row:SetPoint("TOPLEFT", self.frame, "BOTTOMLEFT", 0, -((index - 1) * (self.rowHeight + self.rowGap)))
-			row:SetPoint("TOPRIGHT", self.frame, "BOTTOMRIGHT", 0, -((index - 1) * (self.rowHeight + self.rowGap)))
+			local offsetY = -(((index-1) * (self.rowHeight + self.rowGap)) + self.rowGap)
+			row:SetPoint("TOPLEFT", self.frame, "BOTTOMLEFT", 0, offsetY)
+			row:SetPoint("TOPRIGHT", self.frame, "BOTTOMRIGHT", 0, offsetY)
 
 			local coords = self.classIconCoords[string.upper(unit.class or "")]
 
