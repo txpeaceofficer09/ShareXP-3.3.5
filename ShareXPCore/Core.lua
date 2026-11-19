@@ -43,23 +43,47 @@ ShareXPCore = {
 		end
 		return nil
 	end,
+	GetGroupData = function(self)
+		local table = {}
+
+		for k,v in pairs(self.data) do
+			if not self:IsGuildMember(v.name) then
+				table.insert(table, v)
+			end
+		end
+
+		return table
+	end,
 	NotifyCallbacks = function(self)
 		for _, callback in pairs(self.callbacks) do
 			callback(self.data)
 		end
 	end,
+	SendAddonMessage = function(self, message)
+		SendAddonMessage(self.prefix, message, "GUILD")
+
+		if GetNumRaidMembers() > 0 then
+			SendAddonMessage(self.prefix, message, "RAID")
+		elseif GetNumPartyMembers() > 0 then
+			SendAddonMessage(self.prefix, message, "PARTY")
+		end
+	end,
 	RequestRefresh = function(self)
+		self:SendAddonMessage("REFRESH")
+		--[[
+		SendAddonMessage("ShareXP", "REFRESH", "GUILD")
 		if GetNumRaidMembers() > 0 then
 			SendAddonMessage("ShareXP", "REFRESH", "RAID")
 		elseif GetNumPartyMembers() > 0 then
 			SendAddonMessage("ShareXP", "REFRESH", "PARTY")
 		end
+		]]
 	end,
 	PruneTable = function(self)
 		local changed = false
 
 		for i = #self.data, 1, -1 do
-			if not self:IsInGroup(self.data[i].name) then
+			if not self:IsInGroup(self.data[i].name) and not self:IsGuildMember(self.data[i].name) then
 				table.remove(self.data, i)
 				changed = true
 			end
@@ -224,11 +248,14 @@ ShareXPCore = {
 		self:NotifyCallbacks()
 	end,
 	SendXP = function(self, lvl)
+		--[[
 		if ( GetNumRaidMembers() > 0 ) then
 			SendAddonMessage("ShareXP", ("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), select(2, UnitClass("player")), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player")), "RAID")
 		elseif ( GetNumPartyMembers() > 0 ) then
 			SendAddonMessage("ShareXP", ("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), select(2, UnitClass("player")), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player")), "PARTY")
 		end
+		]]
+		self:SendAddonMessage(("XP:%s:%s:%s:%s:%s"):format(UnitName("player"), select(2, UnitClass("player")), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player")))
 
 		self:AddUnitXP(UnitName("player"), select(2, UnitClass("player")), UnitXP("player"), UnitXPMax("player"), lvl or UnitLevel("player"))
 	end,
@@ -237,11 +264,14 @@ ShareXPCore = {
 
 		local Unlocked, Lvl, CurXP, MaxXP, Quality = C_Paragon.GetAccountInfo()
 
+		--[[
 		if ( GetNumRaidMembers() > 0 ) then
 			SendAddonMessage("ShareXP", ("PXP:%s:%s:%s:%s:%s:%s:%s"):format(UnitName("player"), select(2, UnitClass("player")), Unlocked and 1 or 0, CurXP, MaxXP, Lvl, Quality), "RAID")
 		elseif ( GetNumPartyMembers() > 0 ) then
 			SendAddonMessage("ShareXP", ("PXP:%s:%s:%s:%s:%s:%s:%s"):format(UnitName("player"), select(2, UnitClass("player")), Unlocked and 1 or 0, CurXP, MaxXP, Lvl, Quality), "PARTY")
 		end
+		]]
+		self:SendAddonMessage(("PXP:%s:%s:%s:%s:%s:%s:%s"):format(UnitName("player"), select(2, UnitClass("player")), Unlocked and 1 or 0, CurXP, MaxXP, Lvl, Quality))
 
 		self:AddUnitPXP(UnitName("player"), select(2, UnitClass("player")), Unlocked, CurXP, MaxXP, Lvl, Quality)
 	end,
